@@ -23,22 +23,46 @@ def compute_gradient_descent(chi, grad, domain, mu):
 			c = preprocessing.BelongsInteriorDomain(domain[i, j + 1])
 			d = preprocessing.BelongsInteriorDomain(domain[i, j - 1])
 			if a == 2:
-				print(i+1,j, "-----", "i+1,j")
+				#print(i+1,j, "-----", "i+1,j")
 				chi[i + 1, j] = chi[i + 1, j] - mu * grad[i, j]
 			if b == 2:
-				print(i - 1, j, "-----", "i - 1, j")
+				#print(i - 1, j, "-----", "i - 1, j")
 				chi[i - 1, j] = chi[i - 1, j] - mu * grad[i, j]
 			if c == 2:
-				print(i, j + 1, "-----", "i , j + 1")
+				#print(i, j + 1, "-----", "i , j + 1")
 				chi[i, j + 1] = chi[i, j + 1] - mu * grad[i, j]
 			if d == 2:
-				print(i, j - 1, "-----", "i , j - 1")
+				#print(i, j - 1, "-----", "i , j - 1")
 				chi[i, j - 1] = chi[i, j - 1] - mu * grad[i, j]
 	return chi
 
+def compute_objective_function(domain_omega, u, spacestep):
+
+    """
+    This function compute the objective function:
+    J(u,domain_omega)= \int_{domain_omega}||u||^2 
+
+    Parameter:
+        domain_omega: Matrix (NxP), it defines the domain and the shape of the
+        Robin frontier;
+        u: Matrix (NxP), it is the solution of the Helmholtz problem, we are
+        computing its energy;
+        spacestep: float, it corresponds to the step used to solve the Helmholtz
+        equation.
+    """
+
+    energy = 0.0
+    M, N = numpy.shape(domain_omega)
+
+    for i in range(M):
+        for j in range(N):
+                energy += (u[i, j] ** 2) * (spacestep ** 2)
+
+    return energy
+
 def optimization_procedure(domain_omega, spacestep, omega, f, f_dir, f_neu, f_rob,
                            beta_pde, alpha_pde, alpha_dir, beta_neu, beta_rob, alpha_rob,
-                           Alpha, mu, chi, V_obj, mu1, V0):
+                           Alpha, mu, chi, V_obj):
     """This function return the optimized density.
 
     Parameter:
@@ -53,7 +77,7 @@ def optimization_procedure(domain_omega, spacestep, omega, f, f_dir, f_neu, f_ro
     numb_iter = 100
     epsilon_0 = 10 ** -5
     epsilon_1 = 10 ** -5
-    epsilon_2 = 10 ** -3
+    epsilon_2 = 10 ** 1
     energy = numpy.zeros((numb_iter+1, 1), dtype=numpy.float64)
     while k < numb_iter and mu > 10**(-5):
         print('---- iteration number = ', k)
@@ -102,40 +126,16 @@ def optimization_procedure(domain_omega, spacestep, omega, f, f_dir, f_neu, f_ro
             ene = compute_objective_function(domain_omega, u, spacestep)
             if ene < energy[k]:
                 # The step is increased if the energy decreased
-                mu *= 1.1
+                mu = mu + 0.0001
             else:
                 # The step is decreased is the energy increased
                 mu = mu / 2
+        break
         k += 1
 
     print('end. computing solution of Helmholtz problem, i.e., u')
     
     return chi, energy, u, grad
-
-
-def compute_objective_function(domain_omega, u, spacestep):
-
-    """
-    This function compute the objective function:
-    J(u,domain_omega)= \int_{domain_omega}||u||^2 
-
-    Parameter:
-        domain_omega: Matrix (NxP), it defines the domain and the shape of the
-        Robin frontier;
-        u: Matrix (NxP), it is the solution of the Helmholtz problem, we are
-        computing its energy;
-        spacestep: float, it corresponds to the step used to solve the Helmholtz
-        equation.
-    """
-
-    energy = 0.0
-    M, N = numpy.shape(domain_omega)
-
-    for i in range(M):
-        for j in range(N):
-                energy += (u[i, j] ** 2) * (spacestep ** 2)
-
-    return energy
 
 if __name__ == '__main__':
 
@@ -143,7 +143,7 @@ if __name__ == '__main__':
     # -- Fell free to modify the function call in this cell.
     # ----------------------------------------------------------------------
     # -- set parameters of the geometry
-    N = 50  # number of points along x-axis
+    N = 5  # number of points along x-axis
     M = 2 * N  # number of points along y-axis
     level = 0 # level of the fractal
     spacestep = 1.0 / N  # mesh size
@@ -222,12 +222,13 @@ if __name__ == '__main__':
     # chi, energy, u, grad = your_optimization_procedure(...)
     chi, energy, u, grad = optimization_procedure(domain_omega, spacestep, wavenumber, f, f_dir, f_neu, f_rob,
                         beta_pde, alpha_pde, alpha_dir, beta_neu, beta_rob, alpha_rob,
-                        Alpha, mu, chi, V_obj, mu1, V_0)
+                        Alpha, mu, chi, V_obj)
     # --- en of optimization
-
+    print(chi)
+    
     chin = chi.copy()
     un = u.copy()
-
+    
     # -- plot chi, u, and energy
     postprocessing._plot_uncontroled_solution(u0, chi0)
     postprocessing._plot_controled_solution(un, chin)
