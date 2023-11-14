@@ -58,7 +58,6 @@ if __name__ == '__main__':
     chi = preprocessing._set_chi(M, N, x, y)
     chi = preprocessing.set2zero(chi, domain_omega)
 
-    material = [0, 0, 0, 0, 0, 0]
     # -- this is the function you have written during your project
     import compute_alpha
     Alpha = compute_alpha.compute_alpha(omega)
@@ -80,7 +79,7 @@ if __name__ == '__main__':
             if processing.is_on_robin_boundary(domain_omega[i,j]):
                 chi[i,j] = 1
             
-    omega = numpy.linspace(10, 100, 100)
+    omega = numpy.linspace(10, 400, 100)
     energie = []
     for elem in omega:
         for j in range(N):
