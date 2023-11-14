@@ -104,7 +104,7 @@ def optimization_procedure(domain_omega, spacestep, omega, f, f_dir, f_neu, f_ro
     numb_iter = 5
     #-----Definition of the epsilons--------
     epsilon_0 = 10 ** -5
-    epsilon_1 = 10 ** -5
+    epsilon_1 = 10 ** -2
     epsilon_2 = 10 ** -3
     #-----End epsilons---------------
 
@@ -191,7 +191,7 @@ def compute_objective_function(domain_omega, u, spacestep):
 
     for i in range(M):
         for j in range(N):
-                energy += (u[i, j] ** 2) * (spacestep ** 2)
+                energy += (numpy.abs(u[i, j]) ** 2) * (spacestep ** 2)
 
     return energy
 
