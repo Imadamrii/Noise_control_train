@@ -16,7 +16,8 @@ if __name__ == '__main__':
     M = 2 * N  # number of points along y-axis
     level = 0 # level of the fractal
     spacestep = 1.0 / N  # mesh size
-
+    # Material = [phi, gamma_p, sigma, rho_0, alpha_h, c_0]
+    material = [0.529,7.0 / 5.0,  151429.0, 1.2, 1.37, 340.0]
     # -- set parameters of the partial differential equation
     kx = -1.0
     ky = -1.0
@@ -60,7 +61,7 @@ if __name__ == '__main__':
 
     # -- this is the function you have written during your project
     import compute_alpha
-    Alpha = compute_alpha.compute_alpha(omega)
+    Alpha = compute_alpha.compute_alpha(omega, material)
     alpha_rob = Alpha[0] * chi
 
     # -- set parameters for optimization
@@ -84,7 +85,7 @@ if __name__ == '__main__':
     for elem in omega:
         for j in range(N):
             f_dir[0, j] = g(j/N, elem)
-        Alpha = compute_alpha.compute_alpha(elem)
+        Alpha = compute_alpha.compute_alpha(elem, material)
         alpha_rob = Alpha[0] * chi
         u = processing.solve_helmholtz(domain_omega, spacestep, elem, f, f_dir, f_neu, f_rob, beta_pde, alpha_pde, alpha_dir, beta_neu, beta_rob, alpha_rob)
         energie.append(demo_control_polycopie2023.compute_objective_function(domain_omega, u, spacestep))

@@ -15,20 +15,20 @@ def real_to_complex(z):
 def complex_to_real(z):
     return numpy.array([numpy.real(z), numpy.imag(z)])
 
-def compute_alpha(omega):
+def compute_alpha(omega, material):
     """
     .. warning: $w = 2 \pi f$
     w is called circular frequency
     f is called frequency
     """
-
+    # Material = [phi, gamma_p, sigma, rho_0, alpha_h, c_0]
     # Birch LT
-    phi = 0.529  # porosity
-    gamma_p = 7.0 / 5.0
-    sigma = 151429.0  # resitivity
-    rho_0 = 1.2
-    alpha_h = 1.37  # tortuosity
-    c_0 = 340.0
+    phi = material[0]  # porosity
+    gamma_p = material[1]
+    sigma = material[2]  # resitivity
+    rho_0 = material[3]
+    alpha_h = material[4]  # tortuosity
+    c_0 = material[5]
 
     # parameters of the geometry
     L = 1

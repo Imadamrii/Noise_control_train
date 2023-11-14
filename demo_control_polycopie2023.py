@@ -313,6 +313,9 @@ if __name__ == '__main__':
     M = 2 * N  # number of points along y-axis
     level = 0 # level of the fractal
     spacestep = 1.0 / N  # mesh size
+    
+    # Material = [phi, gamma_p, sigma, rho_0, alpha_h, c_0]
+    material = [0.529, 7.0/5.0, 151429.0, 1.2, 1.37, 340.0]
 
     # -- set parameters of the partial differential equation
     kx = -1.0
@@ -355,10 +358,9 @@ if __name__ == '__main__':
     chi = preprocessing._set_chi(M, N, x, y)
     chi = preprocessing.set2zero(chi, domain_omega)
 
-    material = [0, 0, 0, 0, 0, 0]
     # -- this is the function you have written during your project
     import compute_alpha
-    Alpha = compute_alpha.compute_alpha(omega)[0]
+    Alpha = compute_alpha.compute_alpha(omega, material)[0]
     alpha_rob = Alpha * chi
 
     # -- set parameters for optimization
