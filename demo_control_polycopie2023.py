@@ -173,7 +173,7 @@ def projection_finale(chi, V_obj):
          for j in range (N):
               table.append((chi[i,j],(i,j)))
 
-    table= sorted(table)
+    table= sorted(table, reverse=True)
     chi1=numpy.zeros((M,N))
     nbre_de_uns = int(V_obj*N)
     for i in range(nbre_de_uns): 
@@ -315,7 +315,7 @@ if __name__ == '__main__':
     # -- set parameters of the geometry
     N = 50  # number of points along x-axis
     M = 2 * N  # number of points along y-axis
-    level = 0 # level of the fractal
+    level = 2 # level of the fractal
     spacestep = 1.0 / N  # mesh size
     
     # Material = [phi, gamma_p, sigma, rho_0, alpha_h, c_0]
