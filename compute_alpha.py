@@ -31,7 +31,7 @@ def compute_alpha(omega):
     c_0 = 340.0
 
     # parameters of the geometry
-    L = 0.01
+    L = 1
 
     # parameters of the mesh
     resolution = 12  # := number of elements along L
@@ -73,7 +73,7 @@ def compute_alpha(omega):
     def g(x, omega):
         return numpy.exp(-((x-0.5)**2)/2)/(numpy.sqrt(2*numpy.pi))
     
-    y = numpy.linspace(0,1, 1000)
+    y = numpy.linspace(0, 1, 1000)
     N = 100
     
 
@@ -134,7 +134,7 @@ def compute_alpha(omega):
     def sum_e_k(omega):
         def sum_func(alpha):
             s = 0.0
-            for n in range(-12,12+1):
+            for n in range(-resolution, resolution+1):
                 k = n * numpy.pi / L
                 s = s + e_k(k, alpha, omega)
             return s
