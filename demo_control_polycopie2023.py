@@ -358,8 +358,8 @@ if __name__ == '__main__':
     material = [0, 0, 0, 0, 0, 0]
     # -- this is the function you have written during your project
     import compute_alpha
-    Alpha = compute_alpha.compute_alpha(omega)
-    alpha_rob = Alpha[0] * chi
+    Alpha = compute_alpha.compute_alpha(omega)[0]
+    alpha_rob = Alpha * chi
 
     # -- set parameters for optimization
     S = 0  # surface of the fractal
