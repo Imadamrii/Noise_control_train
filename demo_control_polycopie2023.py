@@ -95,18 +95,18 @@ def integral(chi):
             integral += chi[i,j]*spacestep
     return integral
 
-def projection_finale(chi, V_obj): 
-    table = []
-    for i in range (M):
-         for j in range (N):
-              table.append((chi[i,j],(i,j)))
+# def projection_finale(chi, V_obj): 
+#     table = []
+#     for i in range (M):
+#          for j in range (N):
+#               table.append((chi[i,j],(i,j)))
 
-    table= sorted(table)
-    chi1=numpy.zeros(M,N)
-    for index in range (int(V_obj*N)):
+#     table= sorted(table)
+#     chi1=numpy.zeros(M,N)
+#     for index in range (int(V_obj*N)):
 
     
-    return chi 
+#     return chi 
 
 def compute_projected(chi, domain, V_obj):
     """This function performs the projection of $\chi^n - mu*grad
@@ -167,18 +167,18 @@ def integral(chi):
             integral += chi[i,j]*spacestep
     return integral
 
-def projection_finale(chi, V_obj): 
-    table = []
-    for i in range (M):
-         for j in range (N):
-              table.append((chi[i,j],(i,j)))
+# def projection_finale(chi, V_obj): 
+#     table = []
+#     for i in range (M):
+#          for j in range (N):
+#               table.append((chi[i,j],(i,j)))
 
-    table= sorted(table)
-    chi1=numpy.zeros(M,N)
-    for index in range (int(V_obj*N)):
+#     table= sorted(table)
+#     chi1=numpy.zeros(M,N)
+#     for index in range (int(V_obj*N)):
 
     
-    return chi 
+#     return chi 
 
 def compute_objective_function(domain_omega, u, spacestep):
 
@@ -275,7 +275,7 @@ def optimization_procedure(domain_omega, spacestep, omega, f, f_dir, f_neu, f_ro
     print('end. computing solution of Helmholtz problem, i.e., u')
     alpha_rob = Alpha*chi
     u = processing.solve_helmholtz(domain_omega, spacestep, omega, f, f_dir, f_neu, f_rob, beta_pde, alpha_pde, alpha_dir, beta_neu, beta_rob, alpha_rob)
-    chi = projection_max(chi)
+    # chi = projection_max(chi)
     return chi, energy, u, grad
 
 
@@ -337,7 +337,7 @@ if __name__ == '__main__':
     # ----------------------------------------------------------------------
     # -- define boundary conditions
     # planar wave defined on top
-    
+    omega=1
     def g(x, omega):
         return numpy.exp(-((x-0.5)**2)/2)/(numpy.sqrt(2*numpy.pi))
     
