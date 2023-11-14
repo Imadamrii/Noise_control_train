@@ -86,6 +86,26 @@ def compute_projected(chi, domain, V_obj):
 
     return chi
 
+        
+def integral(chi):
+    integral = 0.0
+    for i in range(M):
+        for j in range(N):
+            integral += chi[i,j]*spacestep
+    return integral
+
+def projection_finale(chi, V_obj): 
+    table = []
+    for i in range (M):
+         for j in range (N):
+              table.append((chi[i,j],(i,j)))
+
+    table= sorted(table)
+    chi1=numpy.zeros(M,N)
+    for index in range (int(V_obj*N)):
+
+    
+    return chi 
 
 def optimization_procedure(domain_omega, spacestep, omega, f, f_dir, f_neu, f_rob,
                            beta_pde, alpha_pde, alpha_dir, beta_neu, beta_rob, alpha_rob,
@@ -102,73 +122,63 @@ def optimization_procedure(domain_omega, spacestep, omega, f, f_dir, f_neu, f_ro
     k = 0
     (M, N) = numpy.shape(domain_omega)
     numb_iter = 5
-    #-----Definition of the epsilons--------
     epsilon_0 = 10 ** -5
-    epsilon_1 = 10 ** -2
-    epsilon_2 = 10 ** -3
-    #-----End epsilons---------------
+   
 
     energy = numpy.zeros((numb_iter+1, 1), dtype=numpy.float64)
     while k < numb_iter and mu > 10**(-5):
-        # print('---- iteration number = ', k)
+        print('---- iteration number = ', k)
         # print('1. computing solution of Helmholtz problem, i.e., u')
-        # print('2. computing solution of adjoint problem, i.e., p')
-        # print('3. computing objective function, i.e., energy')
-        # print('4. computing parametric gradient')
-        #solution helmotz problem 
         u = processing.solve_helmholtz(domain_omega, spacestep, omega, f, f_dir, f_neu, f_rob, beta_pde, alpha_pde, alpha_dir, beta_neu, beta_rob, alpha_rob)
+
+        # print('2. computing solution of adjoint problem, i.e., p')
         p = processing.solve_helmholtz(domain_omega, spacestep, omega, -2*numpy.conjugate(u),numpy.zeros((M,N)), f_neu, f_rob, beta_pde, alpha_pde, alpha_dir, beta_neu, beta_rob, alpha_rob)
+
+        # print('3. computing objective function, i.e., energy')
         energy[k] = compute_objective_function(domain_omega, u, spacestep)
-        
+
+        # print('4. computing parametric gradient')
         grad = numpy.zeros((M,N))
         for i in range(M):
             for j in range(N):
-                if processing.is_on_robin_boundary([domain_omega[i,j]]):
-                    grad += - numpy.real(Alpha*u[i,j]*p[i,j])*spacestep
+                # if processing.is_on_robin_boundary([domain_omega[i,j]]):
+                grad[i,j] += - numpy.real(Alpha*u[i,j]*p[i,j])
+        print(numpy.linalg.norm(grad))
+
+        #solution helmotz problem 
+        
+
         ene = energy[k]
-        
-        def integral(chi):
-            integral = 0.0
-            for i in range(M):
-                for j in range(N):
-                    integral += chi[i,j]*spacestep
-            return integral
-        
-        def projection_max(chi, l): 
-            for i in range(M):
-                for j in range(N): 
-                    chi[i,j] = max(0, min(compute_gradient_descent(chi, grad, domain_omega, mu)[i,j]+l,1))
-            return chi 
-        
 
-                    
         while ene >= energy[k] and mu > epsilon_0:
+            
             l = 0
-            chi = compute_projected(chi, domain_omega, V_obj)
-
-            while numpy.abs(integral(chi)-V_obj) >= epsilon_1:
-                if integral(chi) >= V_obj:
-                    l -= epsilon_2
-                else: 
-                    l += epsilon_2
-                chi = compute_projected(chi, domain_omega, V_obj)
-            print('    a. computing gradient descent')
+            
+            # print('    a. computing gradient descent')
+            chi = compute_gradient_descent(chi,grad, domain_omega, mu)
+            
             # print('    b. computing projected gradient')
+            chi = compute_projected(chi, domain_omega, V_obj)
+            print(numpy.linalg.norm(chi-chi0))
             # print('    c. computing solution of Helmholtz problem, i.e., u')
-            # print('    d. computing objective function, i.e., energy (E)')
             alpha_rob = Alpha*chi # Mettre à jour le coefficient alpha_rob pour le nouveau chi_k+1
             u = processing.solve_helmholtz(domain_omega, spacestep, omega, f, f_dir, f_neu, f_rob, beta_pde, alpha_pde, alpha_dir, beta_neu, beta_rob, alpha_rob)
+
+            # print('    d. computing objective function, i.e., energy (E)')
             ene = compute_objective_function(domain_omega, u, spacestep)
+            
             if ene < energy[k]:
                 # The step is increased if the energy decreased
-                mu *= 1.1
+                mu += 0.01
             else:
                 # The step is decreased is the energy increased
-                mu = mu / 2
+                mu = mu/ 2
         k += 1
 
     print('end. computing solution of Helmholtz problem, i.e., u')
-
+    alpha_rob = Alpha*chi
+    u = processing.solve_helmholtz(domain_omega, spacestep, omega, f, f_dir, f_neu, f_rob, beta_pde, alpha_pde, alpha_dir, beta_neu, beta_rob, alpha_rob)
+    chi = projection_max(chi)
     return chi, energy, u, grad
 
 
@@ -191,7 +201,7 @@ def compute_objective_function(domain_omega, u, spacestep):
 
     for i in range(M):
         for j in range(N):
-                energy += (numpy.abs(u[i, j]) ** 2) * (spacestep ** 2)
+                energy += (numpy.real(u[i, j]) ** 2 + numpy.imag(u[i,j])**2) * (spacestep ** 2)
 
     return energy
 
@@ -211,7 +221,7 @@ if __name__ == '__main__':
     kx = -1.0
     ky = -1.0
     wavenumber = numpy.sqrt(kx**2 + ky**2)  # wavenumber
-    wavenumber = 10.0
+    #wavenumber = 10.0
 
     # ----------------------------------------------------------------------
     # -- Do not modify this cell, these are the values that you will be assessed against.
@@ -261,7 +271,7 @@ if __name__ == '__main__':
                 S += 1
     V_0 = 1  # initial volume of the domain
     V_obj = numpy.sum(numpy.sum(chi)) / S  # constraint on the density
-    mu = 5  # initial gradient step
+    mu = 5 # initial gradient step
     mu1 = 10**(-5)  # parameter of the volume functional
 
     # ----------------------------------------------------------------------
