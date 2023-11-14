@@ -2,7 +2,7 @@
 
 
 # Python packages
-import matplotlib.pyplot
+import matplotlib.pyplot as plt
 import numpy
 import os
 
@@ -13,6 +13,7 @@ import preprocessing
 import processing
 import postprocessing
 #import solutions
+import compute_alpha
 
 def compute_gradient_descent(chi, grad, domain, mu):
 	(M, N) = numpy.shape(domain)
@@ -153,7 +154,7 @@ if __name__ == '__main__':
     ky = -1.0
     wavenumber = numpy.sqrt(kx**2 + ky**2)  # wavenumber
     wavenumber = 10.0
-
+    omega = 50
     # ----------------------------------------------------------------------
     # -- Do not modify this cell, these are the values that you will be assessed against.
     # ----------------------------------------------------------------------
@@ -171,11 +172,13 @@ if __name__ == '__main__':
     # ----------------------------------------------------------------------
     # -- define boundary conditions
     # planar wave defined on top
-    def g(x):
+    
+    def g(x, omega):
         return numpy.exp(-((x-0.5)**2)/2)/(numpy.sqrt(2*numpy.pi))
+    
     f_dir[:, :] = 0.0
     for j in range(N):
-        f_dir[0, j] = g(j/N)
+        f_dir[0, j] = g(j/N, omega)
     # spherical wave defined on top
     #f_dir[:, :] = 0.0
     #f_dir[0, int(N/2)] = 10.0
@@ -187,12 +190,11 @@ if __name__ == '__main__':
     chi = preprocessing._set_chi(M, N, x, y)
     chi = preprocessing.set2zero(chi, domain_omega)
 
-    # -- define absorbing material
-    Alpha = 10.0 - 10.0 * 1j
+    material = [0, 0, 0, 0, 0, 0]
     # -- this is the function you have written during your project
-    #import compute_alpha
-    #Alpha = compute_alpha.compute_alpha(...)
-    alpha_rob = Alpha * chi
+    import compute_alpha
+    Alpha = compute_alpha.compute_alpha(omega)
+    alpha_rob = Alpha[0] * chi
 
     # -- set parameters for optimization
     S = 0  # surface of the fractal
@@ -224,7 +226,6 @@ if __name__ == '__main__':
                         beta_pde, alpha_pde, alpha_dir, beta_neu, beta_rob, alpha_rob,
                         Alpha, mu, chi, V_obj)
     # --- en of optimization
-    print(chi)
     
     chin = chi.copy()
     un = u.copy()
