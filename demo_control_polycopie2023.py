@@ -35,7 +35,56 @@ def compute_gradient_descent(chi, grad, domain, mu):
 				chi[i, j - 1] = chi[i, j - 1] - mu * grad[i, j]
 	return chi
 
+def compute_projected(chi, domain, V_obj):
+    """This function performs the projection of $\chi^n - mu*grad
 
+    To perform the optimization, we use a projected gradient algorithm. This
+    function caracterizes the projection of chi onto the admissible space
+    (the space of $L^{infty}$ function which volume is equal to $V_{obj}$ and whose
+    values are located between 0 and 1).
+
+    :param chi: density matrix
+    :param domain: domain of definition of the equations
+    :param V_obj: characterizes the volume constraint
+    :type chi: numpy.array((M,N), dtype=float64)
+    :type domain: numpy.array((M,N), dtype=complex128)
+    :type float: float
+    :return:
+    :rtype:
+    """
+
+    (M, N) = numpy.shape(domain)
+    S = 0
+    for i in range(M):
+        for j in range(N):
+            if domain[i, j] == _env.NODE_ROBIN:
+                S = S + 1
+
+    B = chi.copy()
+    l = 0
+    chi = preprocessing.set2zero(chi, domain)
+
+    V = numpy.sum(numpy.sum(chi)) / S
+    debut = -numpy.max(chi)
+    fin = numpy.max(chi)
+    ecart = fin - debut
+    # We use dichotomy to find a constant such that chi^{n+1}=max(0,min(chi^{n}+l,1)) is an element of the admissible space
+    while ecart > 10 ** -4:
+        # calcul du milieu
+        l = (debut + fin) / 2
+        for i in range(M):
+            for j in range(N):
+                chi[i, j] = numpy.maximum(0, numpy.minimum(B[i, j] + l, 1))
+        chi = preprocessing.set2zero(chi, domain)
+        V = sum(sum(chi)) / S
+        if V > V_obj:
+            fin = l
+        else:
+            debut = l
+        ecart = fin - debut
+        # print('le volume est', V, 'le volume objectif est', V_obj)
+
+    return chi
 
 
 def optimization_procedure(domain_omega, spacestep, omega, f, f_dir, f_neu, f_rob,
@@ -91,32 +140,19 @@ def optimization_procedure(domain_omega, spacestep, omega, f, f_dir, f_neu, f_ro
                     chi[i,j] = max(0, min(compute_gradient_descent(chi, grad, domain_omega, mu)[i,j]+l,1))
             return chi 
         
-        def pl(chi,l): 
-            l = 0
-            M,N = numpy.shape(chi)
-            a = numpy.zeros((M,N))
 
-            while abs(numpy.sum(a) / M - V_obj) > 1e-2:
-                for i in range(M):
-                    for j in range(N): 
-                        if chi[i,j] > l:
-                            a[i,j] = 1
-                        else:
-                            a[i,j] = 0
-
-            return a 
                     
         while ene >= energy[k] and mu > epsilon_0:
             l = 0
-            chi = pl(chi,l)
+            chi = compute_projected(chi, domain_omega, V_obj)
 
             while numpy.abs(integral(chi)-V_obj) >= epsilon_1:
                 if integral(chi) >= V_obj:
                     l -= epsilon_2
                 else: 
                     l += epsilon_2
-                chi = pl(chi,l)
-            # print('    a. computing gradient descent')
+                chi = compute_projected(chi, domain_omega, V_obj)
+            print('    a. computing gradient descent')
             # print('    b. computing projected gradient')
             # print('    c. computing solution of Helmholtz problem, i.e., u')
             # print('    d. computing objective function, i.e., energy (E)')
