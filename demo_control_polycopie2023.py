@@ -12,10 +12,11 @@ import _env
 import preprocessing
 import processing
 import postprocessing
-import solutions
+#import solutions
 
 def compute_gradient_descent(chi, grad, domain, mu):
 	(M, N) = numpy.shape(domain)
+     
 	for i in range(1, M - 1):
 		for j in range(1, N - 1):
 			a = preprocessing.BelongsInteriorDomain(domain[i + 1, j])
@@ -23,18 +24,19 @@ def compute_gradient_descent(chi, grad, domain, mu):
 			c = preprocessing.BelongsInteriorDomain(domain[i, j + 1])
 			d = preprocessing.BelongsInteriorDomain(domain[i, j - 1])
 			if a == 2:
-				print(i+1,j, "-----", "i+1,j")
+
 				chi[i + 1, j] = chi[i + 1, j] - mu * grad[i, j]
 			if b == 2:
-				print(i - 1, j, "-----", "i - 1, j")
+			
 				chi[i - 1, j] = chi[i - 1, j] - mu * grad[i, j]
 			if c == 2:
-				print(i, j + 1, "-----", "i , j + 1")
 				chi[i, j + 1] = chi[i, j + 1] - mu * grad[i, j]
 			if d == 2:
-				print(i, j - 1, "-----", "i , j - 1")
 				chi[i, j - 1] = chi[i, j - 1] - mu * grad[i, j]
 	return chi
+
+
+
 
 def optimization_procedure(domain_omega, spacestep, omega, f, f_dir, f_neu, f_rob,
                            beta_pde, alpha_pde, alpha_dir, beta_neu, beta_rob, alpha_rob,
@@ -50,22 +52,26 @@ def optimization_procedure(domain_omega, spacestep, omega, f, f_dir, f_neu, f_ro
 
     k = 0
     (M, N) = numpy.shape(domain_omega)
-    numb_iter = 100
+    numb_iter = 5
+    #-----Definition of the epsilons--------
     epsilon_0 = 10 ** -5
     epsilon_1 = 10 ** -5
     epsilon_2 = 10 ** -3
+    #-----End epsilons---------------
+
     energy = numpy.zeros((numb_iter+1, 1), dtype=numpy.float64)
     while k < numb_iter and mu > 10**(-5):
-        print('---- iteration number = ', k)
-        print('1. computing solution of Helmholtz problem, i.e., u')
-        print('2. computing solution of adjoint problem, i.e., p')
-        print('3. computing objective function, i.e., energy')
-        print('4. computing parametric gradient')
+        # print('---- iteration number = ', k)
+        # print('1. computing solution of Helmholtz problem, i.e., u')
+        # print('2. computing solution of adjoint problem, i.e., p')
+        # print('3. computing objective function, i.e., energy')
+        # print('4. computing parametric gradient')
+        #solution helmotz problem 
         u = processing.solve_helmholtz(domain_omega, spacestep, omega, f, f_dir, f_neu, f_rob, beta_pde, alpha_pde, alpha_dir, beta_neu, beta_rob, alpha_rob)
-        p = processing.solve_helmholtz(domain_omega, spacestep, omega, -2*numpy.conjugate(u), 0, f_neu, f_rob, beta_pde, alpha_pde, alpha_dir, beta_neu, beta_rob, alpha_rob)
+        p = processing.solve_helmholtz(domain_omega, spacestep, omega, -2*numpy.conjugate(u),numpy.zeros((M,N)), f_neu, f_rob, beta_pde, alpha_pde, alpha_dir, beta_neu, beta_rob, alpha_rob)
         energy[k] = compute_objective_function(domain_omega, u, spacestep)
         
-        grad = 0.0
+        grad = numpy.zeros((M,N))
         for i in range(M):
             for j in range(N):
                 if processing.is_on_robin_boundary([domain_omega[i,j]]):
@@ -79,19 +85,41 @@ def optimization_procedure(domain_omega, spacestep, omega, f, f_dir, f_neu, f_ro
                     integral += chi[i,j]*spacestep
             return integral
         
+        def projection_max(chi, l): 
+            for i in range(M):
+                for j in range(N): 
+                    chi[i,j] = max(0, min(compute_gradient_descent(chi, grad, domain_omega, mu)[i,j]+l,1))
+            return chi 
+        
+        def pl(chi,l): 
+            l = 0
+            M,N = numpy.shape(chi)
+            a = numpy.zeros((M,N))
+
+            while abs(numpy.sum(a) / M - V_obj) > 1e-2:
+                for i in range(M):
+                    for j in range(N): 
+                        if chi[i,j] > l:
+                            a[i,j] = 1
+                        else:
+                            a[i,j] = 0
+
+            return a 
+                    
         while ene >= energy[k] and mu > epsilon_0:
             l = 0
-            chi = numpy.max(0, numpy.min(compute_gradient_descent(chi, grad, domain_omega, mu)+l,1))
+            chi = pl(chi,l)
+
             while numpy.abs(integral(chi)-V_obj) >= epsilon_1:
                 if integral(chi) >= V_obj:
                     l -= epsilon_2
                 else: 
                     l += epsilon_2
-                chi = numpy.max(0, numpy.min(compute_gradient_descent(chi, grad, domain_omega, mu)+l,1))
-            print('    a. computing gradient descent')
-            print('    b. computing projected gradient')
-            print('    c. computing solution of Helmholtz problem, i.e., u')
-            print('    d. computing objective function, i.e., energy (E)')
+                chi = pl(chi,l)
+            # print('    a. computing gradient descent')
+            # print('    b. computing projected gradient')
+            # print('    c. computing solution of Helmholtz problem, i.e., u')
+            # print('    d. computing objective function, i.e., energy (E)')
             alpha_rob = Alpha*chi # Mettre à jour le coefficient alpha_rob pour le nouveau chi_k+1
             u = processing.solve_helmholtz(domain_omega, spacestep, omega, f, f_dir, f_neu, f_rob, beta_pde, alpha_pde, alpha_dir, beta_neu, beta_rob, alpha_rob)
             ene = compute_objective_function(domain_omega, u, spacestep)

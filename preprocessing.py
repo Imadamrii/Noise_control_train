@@ -11,7 +11,7 @@ def BelongsInteriorDomain(node):
 	if (node < 0):
 		return 1
 	if node == 3:
-		print("Robin")
+		#print("Robin")
 		return 2
 	else:
 		return 0
