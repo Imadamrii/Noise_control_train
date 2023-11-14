@@ -167,18 +167,22 @@ def integral(chi):
             integral += chi[i,j]*spacestep
     return integral
 
-# def projection_finale(chi, V_obj): 
-#     table = []
-#     for i in range (M):
-#          for j in range (N):
-#               table.append((chi[i,j],(i,j)))
+def projection_finale(chi, V_obj): 
+    table = []
+    for i in range (M):
+         for j in range (N):
+              table.append((chi[i,j],(i,j)))
 
-#     table= sorted(table)
-#     chi1=numpy.zeros(M,N)
-#     for index in range (int(V_obj*N)):
+    table= sorted(table)
+    chi1=numpy.zeros((M,N))
+    nbre_de_uns = int(V_obj*N)
+    for i in range(nbre_de_uns): 
+        value, node_id = table[i]
+        node_i, node_j= node_id 
+        chi1[node_i,node_j] = 1 
 
-    
-#     return chi 
+    return chi1
+
 
 def compute_objective_function(domain_omega, u, spacestep):
 
@@ -275,7 +279,7 @@ def optimization_procedure(domain_omega, spacestep, omega, f, f_dir, f_neu, f_ro
     print('end. computing solution of Helmholtz problem, i.e., u')
     alpha_rob = Alpha*chi
     u = processing.solve_helmholtz(domain_omega, spacestep, omega, f, f_dir, f_neu, f_rob, beta_pde, alpha_pde, alpha_dir, beta_neu, beta_rob, alpha_rob)
-    # chi = projection_max(chi)
+    chi = projection_finale(chi,V_obj)
     return chi, energy, u, grad
 
 
