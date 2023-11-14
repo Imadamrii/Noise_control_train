@@ -89,7 +89,7 @@ if __name__ == '__main__':
         u = processing.solve_helmholtz(domain_omega, spacestep, elem, f, f_dir, f_neu, f_rob, beta_pde, alpha_pde, alpha_dir, beta_neu, beta_rob, alpha_rob)
         energie.append(demo_control_polycopie2023.compute_objective_function(domain_omega, u, spacestep))
 
-    plt.plot(omega, numpy.log(energie))
+    plt.plot(omega, energie)
     plt.title('Graphe de $\log(J(\chi))$ en fonction de $\omega$')
     plt.xlabel('Fréquence $\omega$')
     plt.ylabel('Énergie $\log(J(\chi))$')
