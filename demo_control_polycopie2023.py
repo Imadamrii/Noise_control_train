@@ -56,7 +56,7 @@ def compute_objective_function(domain_omega, u, spacestep):
 
     for i in range(M):
         for j in range(N):
-                energy += (u[i, j] ** 2) * (spacestep ** 2)
+                energy += (numpy.abs(u[i, j]) ** 2) * (spacestep ** 2)
 
     return energy
 
@@ -74,10 +74,10 @@ def optimization_procedure(domain_omega, spacestep, omega, f, f_dir, f_neu, f_ro
 
     k = 0
     (M, N) = numpy.shape(domain_omega)
-    numb_iter = 100
+    numb_iter = 10
     epsilon_0 = 10 ** -5
     epsilon_1 = 10 ** -5
-    epsilon_2 = 10 ** 1
+    epsilon_2 = 10 ** -2
     energy = numpy.zeros((numb_iter+1, 1), dtype=numpy.float64)
     while k < numb_iter and mu > 10**(-5):
         print('---- iteration number = ', k)
@@ -95,6 +95,7 @@ def optimization_procedure(domain_omega, spacestep, omega, f, f_dir, f_neu, f_ro
             for j in range(N):
                 if processing.is_on_robin_boundary([domain_omega[i,j]]):
                     grad[i,j] = - numpy.real(Alpha*u[i,j]*p[i,j])
+                    
         ene = energy[k]
         
         def integral(chi):
@@ -117,20 +118,19 @@ def optimization_procedure(domain_omega, spacestep, omega, f, f_dir, f_neu, f_ro
                 for i in range(M):
                     for j in range(N):
                         chi[i,j] = numpy.max(0, numpy.min(compute_gradient_descent(chi, grad, domain_omega, mu)[i,j]+l,1))
-            print('    a. computing gradient descent')
-            print('    b. computing projected gradient')
-            print('    c. computing solution of Helmholtz problem, i.e., u')
-            print('    d. computing objective function, i.e., energy (E)')
+            #print('a. computing gradient descent')
+            #print('b. computing projected gradient')
+            #print('c. computing solution of Helmholtz problem, i.e., u')
+            #print('d. computing objective function, i.e., energy (E)')
             alpha_rob = Alpha*chi # Mettre à jour le coefficient alpha_rob pour le nouveau chi_k+1
             u = processing.solve_helmholtz(domain_omega, spacestep, omega, f, f_dir, f_neu, f_rob, beta_pde, alpha_pde, alpha_dir, beta_neu, beta_rob, alpha_rob)
             ene = compute_objective_function(domain_omega, u, spacestep)
             if ene < energy[k]:
                 # The step is increased if the energy decreased
-                mu = mu + 0.0001
+                mu = 1.1 * mu
             else:
                 # The step is decreased is the energy increased
                 mu = mu / 2
-        break
         k += 1
 
     print('end. computing solution of Helmholtz problem, i.e., u')
