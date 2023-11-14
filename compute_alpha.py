@@ -21,8 +21,7 @@ def compute_alpha(omega, material):
     w is called circular frequency
     f is called frequency
     """
-    # Material = [phi, gamma_p, sigma, rho_0, alpha_h, c_0]
-    # Birch LT
+    
     phi = material[0]  # porosity
     gamma_p = material[1]
     sigma = material[2]  # resitivity
@@ -70,8 +69,21 @@ def compute_alpha(omega, material):
         return complex(real, im)
 
 
+    def gaussienne(x,sigma,mu):
+     return numpy.exp(-(x-mu)*(x-mu)/(2*sigma*sigma))
+
+    def A1(omega):
+        mu1=numpy.log10(70*2*numpy.pi)
+        sigma1=numpy.log10(100*2*numpy.pi)-numpy.log10(70*2*numpy.pi)
+        return gaussienne(numpy.log10(omega),sigma1,mu1)
+
+    def A2(omega):
+        mu2=numpy.log10(1200*2*numpy.pi)
+        sigma2=numpy.log10(1600*2*numpy.pi)-numpy.log10(1000*2*numpy.pi)
+        return 0.5*gaussienne(numpy.log10(omega),sigma2,mu2)
+    
     def g(x, omega):
-        return numpy.exp(-((x-0.5)**2)/2)/(numpy.sqrt(2*numpy.pi))
+        return A2(omega)*numpy.sin(omega*x/material[-1])/x + A1(omega)*numpy.sin(omega*(x-0.5)/material[-1])/(x-0.5)
     
     y = numpy.linspace(0, 1, 1000)
     N = 100
@@ -232,7 +244,7 @@ def run_plot_alpha(material):
 
 
 def run():
-    material = 'BIRCHLT'
+    material = [0.529, 7.0/5.0, 151429.0, 1.2, 1.37, 340.0] #'BIRCHLT'
     run_compute_alpha(material)
     run_plot_alpha(material)
     return

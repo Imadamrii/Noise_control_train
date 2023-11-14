@@ -340,9 +340,23 @@ if __name__ == '__main__':
     # ----------------------------------------------------------------------
     # -- define boundary conditions
     # planar wave defined on top
-    omega=1
+    omega = 4000
+    
+    def gaussienne(x,sigma,mu):
+     return numpy.exp(-(x-mu)*(x-mu)/(2*sigma*sigma))
+
+    def A1(omega):
+        mu1=numpy.log10(70*2*numpy.pi)
+        sigma1=numpy.log10(100*2*numpy.pi)-numpy.log10(70*2*numpy.pi)
+        return gaussienne(numpy.log10(omega),sigma1,mu1)
+
+    def A2(omega):
+        mu2=numpy.log10(1200*2*numpy.pi)
+        sigma2=numpy.log10(1600*2*numpy.pi)-numpy.log10(1000*2*numpy.pi)
+        return 0.5*gaussienne(numpy.log10(omega),sigma2,mu2)
+    
     def g(x, omega):
-        return numpy.exp(-((x-0.5)**2)/2)/(numpy.sqrt(2*numpy.pi))
+        return A2(omega)*numpy.sin(omega*x/material[-1])+ A1(omega)*numpy.sin(omega*(x-0.5)/material[-1])
     
     f_dir[:, :] = 0.0
     for j in range(N):

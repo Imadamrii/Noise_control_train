@@ -42,8 +42,21 @@ if __name__ == '__main__':
     # -- define boundary conditions
     # planar wave defined on top
     
+    def gaussienne(x,sigma,mu):
+     return numpy.exp(-(x-mu)*(x-mu)/(2*sigma*sigma))
+
+    def A1(omega):
+        mu1=numpy.log10(70*2*numpy.pi)
+        sigma1=numpy.log10(100*2*numpy.pi)-numpy.log10(70*2*numpy.pi)
+        return gaussienne(numpy.log10(omega),sigma1,mu1)
+
+    def A2(omega):
+        mu2=numpy.log10(1200*2*numpy.pi)
+        sigma2=numpy.log10(1600*2*numpy.pi)-numpy.log10(1000*2*numpy.pi)
+        return 0.5*gaussienne(numpy.log10(omega),sigma2,mu2)
+    
     def g(x, omega):
-        return numpy.exp(-((x-0.5)**2)/2)/(numpy.sqrt(2*numpy.pi))
+        return A2(omega)*numpy.sinc(omega*x/material[-1])*omega/material[-1]+ A1(omega)*numpy.sinc(omega*(x-0.5)/material[-1])*omega/material[-1]
     
     f_dir[:, :] = 0.0
     for j in range(N):
@@ -80,7 +93,7 @@ if __name__ == '__main__':
             if processing.is_on_robin_boundary(domain_omega[i,j]):
                 chi[i,j] = 1
             
-    omega = numpy.linspace(10, 400, 100)
+    omega = numpy.linspace(100, 4000, 100)
     energie = []
     for elem in omega:
         for j in range(N):
@@ -90,8 +103,9 @@ if __name__ == '__main__':
         u = processing.solve_helmholtz(domain_omega, spacestep, elem, f, f_dir, f_neu, f_rob, beta_pde, alpha_pde, alpha_dir, beta_neu, beta_rob, alpha_rob)
         energie.append(demo_control_polycopie2023.compute_objective_function(domain_omega, u, spacestep))
 
-    plt.plot(omega, numpy.log(energie))
-    plt.title('Graphe de $\log(J(\chi))$ en fonction de $\omega$')
+    plt.plot(omega, energie, 'x')
+    plt.plot(omega, energie)
+    plt.title('Graphe de $J(\chi)$ en fonction de $\omega$')
     plt.xlabel('Fréquence $\omega$')
-    plt.ylabel('Énergie $\log(J(\chi))$')
+    plt.ylabel('Énergie $J(\chi)$')
     plt.show()
