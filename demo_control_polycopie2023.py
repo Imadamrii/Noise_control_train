@@ -173,7 +173,7 @@ def projection_finale(chi, V_obj):
          for j in range (N):
               table.append((chi[i,j],(i,j)))
 
-    table= sorted(table)
+    table= sorted(table, reverse=True)
     chi1=numpy.zeros((M,N))
     nbre_de_uns = int(V_obj*N)
     for i in range(nbre_de_uns): 
@@ -222,50 +222,36 @@ def optimization_procedure(domain_omega, spacestep, omega, f, f_dir, f_neu, f_ro
 
     k = 0
     (M, N) = numpy.shape(domain_omega)
-    numb_iter = 10
+    numb_iter = 100
     epsilon_0 = 10 ** -5
    
 
     energy = numpy.zeros((numb_iter+1, 1), dtype=numpy.float64)
-    while k < numb_iter and mu > 10**(-5):
+    while k < numb_iter and mu > 10 ** -5:
         print('---- iteration number = ', k)
-        # print('1. computing solution of Helmholtz problem, i.e., u')
         u = processing.solve_helmholtz(domain_omega, spacestep, omega, f, f_dir, f_neu, f_rob, beta_pde, alpha_pde, alpha_dir, beta_neu, beta_rob, alpha_rob)
+        f_dir_adjoint = -2*numpy.conjugate(u)
+        p = processing.solve_helmholtz(domain_omega, spacestep, omega, f_dir_adjoint,numpy.zeros((M,N)), f_neu, f_rob, beta_pde, alpha_pde, alpha_dir, beta_neu, beta_rob, alpha_rob)
 
-        # print('2. computing solution of adjoint problem, i.e., p')
-        p = processing.solve_helmholtz(domain_omega, spacestep, omega, -2*numpy.conjugate(u),numpy.zeros((M,N)), f_neu, f_rob, beta_pde, alpha_pde, alpha_dir, beta_neu, beta_rob, alpha_rob)
-
-        # print('3. computing objective function, i.e., energy')
-        energy[k] = compute_objective_function(domain_omega, u, spacestep)
-
-        # print('4. computing parametric gradient')
+        ene = compute_objective_function(domain_omega, u, spacestep)
+        energy[k] = ene
+        
         grad = numpy.zeros((M,N))
         for i in range(M):
             for j in range(N):
                 # if processing.is_on_robin_boundary([domain_omega[i,j]]):
-                grad[i,j] += - numpy.real(Alpha*u[i,j]*p[i,j])
-        print(numpy.linalg.norm(grad))
+                grad[i,j] += - numpy.real(Alpha*u[i,j]*numpy.conjugate(p[i,j]))
+        #print(numpy.linalg.norm(grad))
 
         #solution helmotz problem 
-        
-
-        ene = energy[k]
 
         while ene >= energy[k] and mu > epsilon_0:
-            
-            l = 0
-            
-            # print('    a. computing gradient descent')
             chi = compute_gradient_descent(chi,grad, domain_omega, mu)
-            
-            # print('    b. computing projected gradient')
             chi = compute_projected(chi, domain_omega, V_obj)
-            print(numpy.linalg.norm(chi-chi0))
-            # print('    c. computing solution of Helmholtz problem, i.e., u')
+            
             alpha_rob = Alpha*chi # Mettre à jour le coefficient alpha_rob pour le nouveau chi_k+1
             u = processing.solve_helmholtz(domain_omega, spacestep, omega, f, f_dir, f_neu, f_rob, beta_pde, alpha_pde, alpha_dir, beta_neu, beta_rob, alpha_rob)
 
-            # print('    d. computing objective function, i.e., energy (E)')
             ene = compute_objective_function(domain_omega, u, spacestep)
             
             if ene < energy[k]:
@@ -273,7 +259,7 @@ def optimization_procedure(domain_omega, spacestep, omega, f, f_dir, f_neu, f_ro
                 mu += 0.01
             else:
                 # The step is decreased is the energy increased
-                mu = mu/ 2
+                mu = mu / 2
         k += 1
 
     print('end. computing solution of Helmholtz problem, i.e., u')
@@ -296,13 +282,12 @@ def compute_objective_function(domain_omega, u, spacestep):
         spacestep: float, it corresponds to the step used to solve the Helmholtz
         equation.
     """
-
     energy = 0.0
     M, N = numpy.shape(domain_omega)
 
     for i in range(M):
         for j in range(N):
-                energy += (numpy.real(u[i, j]) ** 2 + numpy.imag(u[i,j])**2) * (spacestep ** 2)
+                energy += (numpy.real(u[i,j]) ** 2 + numpy.imag(u[i,j]) ** 2) * (spacestep ** 2)
 
     return energy
 
@@ -313,7 +298,7 @@ if __name__ == '__main__':
     # -- Fell free to modify the function call in this cell.
     # ----------------------------------------------------------------------
     # -- set parameters of the geometry
-    N = 50  # number of points along x-axis
+    N = 64  # number of points along x-axis
     M = 2 * N  # number of points along y-axis
     level = 0 # level of the fractal
     spacestep = 1.0 / N  # mesh size
@@ -322,9 +307,9 @@ if __name__ == '__main__':
     material = [0.529, 7.0/5.0, 151429.0, 1.2, 1.37, 340.0]
 
     # -- set parameters of the partial differential equation
-    kx = -1.0
-    ky = -1.0
-    wavenumber = numpy.sqrt(kx**2 + ky**2)  # wavenumber
+    #kx = -1.0
+    #ky = -1.0
+    #wavenumber = numpy.sqrt(kx**2 + ky**2)  # wavenumber
     #wavenumber = 10.0
 
     # ----------------------------------------------------------------------
@@ -344,13 +329,18 @@ if __name__ == '__main__':
     # ----------------------------------------------------------------------
     # -- define boundary conditions
     # planar wave defined on top
-    omega=1
-    def g(x, omega):
-        return numpy.exp(-((x-0.5)**2)/2)/(numpy.sqrt(2*numpy.pi))
+
+    omega = 100
+    wavenumber = omega/material[-1]
+
+    # planar wave defined on top
+
+    def g(x,omega):
+        return numpy.exp(-(x-0.5)**2/2)#*numpy.exp(-1j*omega*x)
     
     f_dir[:, :] = 0.0
     for j in range(N):
-        f_dir[0, j] = g(j/N, omega)
+        f_dir[:, j] = g(j/N, omega)
     # spherical wave defined on top
     #f_dir[:, :] = 0.0
     #f_dir[0, int(N/2)] = 10.0
@@ -376,7 +366,7 @@ if __name__ == '__main__':
     V_0 = 1  # initial volume of the domain
     V_obj = numpy.sum(numpy.sum(chi)) / S  # constraint on the density
     mu = 5 # initial gradient step
-    mu1 = 10**(-5)  # parameter of the volume functional
+    mu1 = 10 ** (-5)  # parameter of the volume functional
 
     # ----------------------------------------------------------------------
     # -- Do not modify this cell, these are the values that you will be assessed against.

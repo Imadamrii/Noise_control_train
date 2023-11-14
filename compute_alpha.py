@@ -70,20 +70,31 @@ def compute_alpha(omega, material):
         return complex(real, im)
 
 
-    def g(x, omega):
-        return numpy.exp(-((x-0.5)**2)/2)/(numpy.sqrt(2*numpy.pi))
+    #def g(x, omega):
+    #    return numpy.exp(-((x-0.5)**2)/2)/(numpy.sqrt(2*numpy.pi))
     
-    y = numpy.linspace(0, 1, 1000)
+    y = numpy.linspace(0, 1, 100)
     N = 100
     
+    def g(x,omega):
+        return numpy.exp(-(x-0.5)**2/2)#*numpy.exp(-1j*omega*x)/(numpy.sqrt(2*numpy.pi))
 
     def g_k(k, omega):
         g_values = g(y, omega)
         fourier_coeffs = numpy.fft.fftshift(numpy.fft.fft(g_values))
-        k_values = numpy.fft.fftshift(numpy.fft.fftfreq(N, (2*1)/N))
+        k_values = numpy.fft.fftshift(numpy.fft.fftfreq(N, 2/N))
         index = numpy.argmin(numpy.abs(k_values - k))
         coefficient = fourier_coeffs[index]
         return coefficient
+    
+
+    #def g_k(k, omega):
+    #    g_values = g(y, omega)
+    #    fourier_coeffs = numpy.fft.fftshift(numpy.fft.fft(g_values))
+    #    k_values = numpy.fft.fftshift(numpy.fft.fftfreq(N, (2*1)/N))
+    #    index = numpy.argmin(numpy.abs(k_values - k))
+    #    coefficient = fourier_coeffs[index]
+    #    return coefficient
 
 
     def f(x, k):
@@ -140,11 +151,8 @@ def compute_alpha(omega, material):
             return s
         return sum_func
 
-        return sum_func
-
-
     def alpha(omega):
-        alpha_0 = numpy.array(complex(40.0, -40.0))
+        alpha_0 = numpy.array(complex(6.0, -6.0))
         temp = real_to_complex(minimize(lambda z: numpy.real(sum_e_k(omega)(real_to_complex(z))), complex_to_real(alpha_0), tol=1e-4).x)
         print(temp, "------", "je suis temp")
         return temp
@@ -162,7 +170,7 @@ def compute_alpha(omega, material):
 
 def run_compute_alpha(material):
     print('Computing alpha...')
-    numb_omega = 10  # 1000
+    numb_omega = 100  # 1000
     # omegas = numpy.logspace(numpy.log10(600), numpy.log10(30000), num=numb_omega)
     omegas = numpy.linspace(2.0 * numpy.pi, numpy.pi * 10000, num=numb_omega)
     temp = [compute_alpha(omega, material=material) for omega in omegas]
@@ -202,7 +210,7 @@ def run_plot_alpha(material):
     matplotlib.pyplot.plot(numpy.real(omegas), numpy.real(alphas), color=color)
     matplotlib.pyplot.xlabel(r'$\omega$')
     matplotlib.pyplot.ylabel(r'$\operatorname{Re}(\alpha)$')
-    matplotlib.pyplot.ylim(0, 35)
+    #matplotlib.pyplot.ylim(0, 35)
     # matplotlib.pyplot.show()
     matplotlib.pyplot.savefig('fig_alpha_real_' + str(material) + '.jpg')
     matplotlib.pyplot.close(fig)
@@ -212,7 +220,7 @@ def run_plot_alpha(material):
     matplotlib.pyplot.plot(numpy.real(omegas), numpy.imag(alphas), color=color)
     matplotlib.pyplot.xlabel(r'$\omega$')
     matplotlib.pyplot.ylabel(r'$\operatorname{Im}(\alpha)$')
-    matplotlib.pyplot.ylim(-120, 10)
+    #matplotlib.pyplot.ylim(-120, 10)
     # matplotlib.pyplot.show()
     matplotlib.pyplot.savefig('fig_alpha_imag_' + str(material) + '.jpg')
     matplotlib.pyplot.close(fig)
@@ -220,7 +228,7 @@ def run_plot_alpha(material):
     fig = matplotlib.pyplot.figure()
     ax = matplotlib.pyplot.axes()
     ax.fill_between(numpy.real(omegas), numpy.real(errors), color=color)
-    matplotlib.pyplot.ylim(1.e-9, 1.e-4)
+    #matplotlib.pyplot.ylim(1.e-9, 1.e-4)
     matplotlib.pyplot.yscale('log')
     matplotlib.pyplot.xlabel(r'$\omega$')
     matplotlib.pyplot.ylabel(r'$e(\alpha)$')
@@ -232,11 +240,10 @@ def run_plot_alpha(material):
 
 
 def run():
-    material = 'BIRCHLT'
+    material = [0.529, 7.0/5.0, 151429.0, 1.2, 1.37, 340.0]
     run_compute_alpha(material)
     run_plot_alpha(material)
     return
-
 
 if __name__ == '__main__':
     run()
