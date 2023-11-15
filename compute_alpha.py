@@ -77,7 +77,7 @@ def compute_alpha(omega, material):
     N = 100
     
     def g(x,omega):
-        return numpy.exp(-(x-0.5)**2/2)#*numpy.exp(-1j*omega*x)/(numpy.sqrt(2*numpy.pi))
+        return numpy.exp(-(x-0.5)**2/2)#*numpy.sin(omega*x/c_0)#*numpy.exp(-1j*omega*x)/(numpy.sqrt(2*numpy.pi))
 
     def g_k(k, omega):
         g_values = g(y, omega)
@@ -154,7 +154,7 @@ def compute_alpha(omega, material):
     def alpha(omega):
         alpha_0 = numpy.array(complex(6.0, -6.0))
         temp = real_to_complex(minimize(lambda z: numpy.real(sum_e_k(omega)(real_to_complex(z))), complex_to_real(alpha_0), tol=1e-4).x)
-        print(temp, "------", "je suis temp")
+        # print(temp, "------", "je suis temp")
         return temp
 
 
