@@ -105,7 +105,7 @@ def run_etude_frequentielle_chi_1():
 def run_frequentielle_chi_optimise_vobj_donnée(): 
     N = 64  # number of points along x-axis
     M = 2 * N  # number of points along y-axis
-    level = 0 # level of the fractal
+    level = 2 # level of the fractal
     spacestep = 1.0 / N  # mesh size
     # Material = [phi, gamma_p, sigma, rho_0, alpha_h, c_0]
     material = [0.529,7.0 / 5.0,  151429.0, 1.2, 1.37, 340.0]
@@ -119,7 +119,7 @@ def run_frequentielle_chi_optimise_vobj_donnée():
     # -- set geometry of domain
     domain_omega, x, y, _, _ = preprocessing._set_geometry_of_domain(M, N, level)
 
-    omega = numpy.linspace(2*numpy.pi*20, 2*numpy.pi*1000, 20)
+    omega = numpy.linspace(2*numpy.pi*20, 2*numpy.pi*1000, 100)
     energie = []
     
     def g(x,omega):
