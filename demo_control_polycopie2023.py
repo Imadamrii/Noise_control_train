@@ -110,6 +110,9 @@ def compute_projected(chi, domain, V_obj):
 
 def projection_finale(chi, V_obj): 
     table = []
+
+    M,N = numpy.shape(chi)
+    
     for i in range (M):
          for j in range (N):
               table.append((chi[i,j],(i,j)))
@@ -178,7 +181,11 @@ def optimization_procedure(domain_omega, spacestep, omega, f, f_dir, f_neu, f_ro
         for i in range(M):
             for j in range(N):
                 # if processing.is_on_robin_boundary([domain_omega[i,j]]):
+<<<<<<< HEAD
                 grad[i,j] +=  numpy.real(Alpha*u[i,j]*(p[i,j]))
+=======
+                grad[i,j] +=  numpy.real(Alpha*u[i,j]*p[i,j])
+>>>>>>> fractal_code_source
         #print(numpy.linalg.norm(grad))
 
         #solution helmotz problem 
@@ -218,9 +225,13 @@ if __name__ == '__main__':
     # -- Fell free to modify the function call in this cell.
     # ----------------------------------------------------------------------
     # -- set parameters of the geometry
-    N = 64  # number of points along x-axis
+    N = 64 # number of points along x-axis
     M = 2 * N  # number of points along y-axis
+<<<<<<< HEAD
     level = 3 # level of the fractal
+=======
+    level = 1 # level of the fractal
+>>>>>>> fractal_code_source
     spacestep = 1.0 / N  # mesh size
     
     # Material = [phi, gamma_p, sigma, rho_0, alpha_h, c_0]
@@ -252,6 +263,8 @@ if __name__ == '__main__':
 
     omega = 2*numpy.pi*100
     wavenumber = omega/material[-1]
+    wavelength = 2*numpy.pi/wavenumber
+
 
     # planar wave defined on top
     c_0 = material[-1]
