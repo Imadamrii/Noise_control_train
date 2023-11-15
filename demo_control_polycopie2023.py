@@ -204,7 +204,7 @@ def compute_objective_function(domain_omega, u, spacestep):
 
     for i in range(M):
         for j in range(N):
-                energy += (numpy.abs(u[i, j]) ** 2) * (spacestep ** 2)
+                energy += (numpy.real(u[i, j]) ** 2 + numpy.imag(u[i,j])**2) * (spacestep ** 2)
 
     return energy
 
@@ -227,7 +227,7 @@ def optimization_procedure(domain_omega, spacestep, omega, f, f_dir, f_neu, f_ro
    
 
     energy = numpy.zeros((numb_iter+1, 1), dtype=numpy.float64)
-    while k < numb_iter and mu > 10**(-5):
+    while k < numb_iter :#and mu > 10**(-5):
         print('---- iteration number = ', k)
         # print('1. computing solution of Helmholtz problem, i.e., u')
         u = processing.solve_helmholtz(domain_omega, spacestep, omega, f, f_dir, f_neu, f_rob, beta_pde, alpha_pde, alpha_dir, beta_neu, beta_rob, alpha_rob)
@@ -283,28 +283,8 @@ def optimization_procedure(domain_omega, spacestep, omega, f, f_dir, f_neu, f_ro
     return chi, energy, u, grad
 
 
-def compute_objective_function(domain_omega, u, spacestep):
-    """
-    This function compute the objective function:
-    J(u,domain_omega)= \int_{domain_omega}||u||^2 
 
-    Parameter:
-        domain_omega: Matrix (NxP), it defines the domain and the shape of the
-        Robin frontier;
-        u: Matrix (NxP), it is the solution of the Helmholtz problem, we are
-        computing its energy;
-        spacestep: float, it corresponds to the step used to solve the Helmholtz
-        equation.
-    """
 
-    energy = 0.0
-    M, N = numpy.shape(domain_omega)
-
-    for i in range(M):
-        for j in range(N):
-                energy += (numpy.real(u[i, j]) ** 2 + numpy.imag(u[i,j])**2) * (spacestep ** 2)
-
-    return energy
 
 
 if __name__ == '__main__':
@@ -315,7 +295,7 @@ if __name__ == '__main__':
     # -- set parameters of the geometry
     N = 50  # number of points along x-axis
     M = 2 * N  # number of points along y-axis
-    level = 2 # level of the fractal
+    level = 0 # level of the fractal
     spacestep = 1.0 / N  # mesh size
     
     # Material = [phi, gamma_p, sigma, rho_0, alpha_h, c_0]
@@ -325,7 +305,7 @@ if __name__ == '__main__':
     kx = -1.0
     ky = -1.0
     wavenumber = numpy.sqrt(kx**2 + ky**2)  # wavenumber
-    #wavenumber = 10.0
+    wavenumber =10
 
     # ----------------------------------------------------------------------
     # -- Do not modify this cell, these are the values that you will be assessed against.
@@ -344,13 +324,26 @@ if __name__ == '__main__':
     # ----------------------------------------------------------------------
     # -- define boundary conditions
     # planar wave defined on top
-    omega=1
+    c = 340
+    L = 1
+    omega = wavenumber/c 
     def g(x, omega):
+
         return numpy.exp(-((x-0.5)**2)/2)/(numpy.sqrt(2*numpy.pi))
     
+    def g2(x,omega): 
+
+         a1,b1 = 2.64,0.156
+         a2,b2 = 3.88,0.204
+         A1 = numpy.exp(-(numpy.log(omega)-a1)**2/(2*b1**2))
+         A2 = numpy.exp(-(numpy.log(omega)-a2)**2/(2*b2**2))
+
+         return numpy.sin(omega*x/c)
+    
+
     f_dir[:, :] = 0.0
     for j in range(N):
-        f_dir[0, j] = g(j/N, omega)
+        f_dir[0, j] = g2(j/N, omega)
     # spherical wave defined on top
     #f_dir[:, :] = 0.0
     #f_dir[0, int(N/2)] = 10.0
@@ -365,6 +358,7 @@ if __name__ == '__main__':
     # -- this is the function you have written during your project
     import compute_alpha
     Alpha = compute_alpha.compute_alpha(omega, material)[0]
+    print(Alpha)
     alpha_rob = Alpha * chi
 
     # -- set parameters for optimization
@@ -375,7 +369,7 @@ if __name__ == '__main__':
                 S += 1
     V_0 = 1  # initial volume of the domain
     V_obj = numpy.sum(numpy.sum(chi)) / S  # constraint on the density
-    mu = 5 # initial gradient step
+    mu = 5  # initial gradient step
     mu1 = 10**(-5)  # parameter of the volume functional
 
     # ----------------------------------------------------------------------
