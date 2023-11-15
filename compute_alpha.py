@@ -32,6 +32,7 @@ def compute_alpha(omega, material):
 
     # parameters of the geometry
     L = 1
+    l = 2*L
 
     # parameters of the mesh
     resolution = 12  # := number of elements along L
@@ -77,24 +78,22 @@ def compute_alpha(omega, material):
     N = 100
     
     def g(x,omega):
-        return numpy.exp(-(x-0.5)**2/2)#*numpy.exp(-1j*omega*x)/(numpy.sqrt(2*numpy.pi))
+        return (numpy.sin(omega*x/c_0) + numpy.sin(10*omega*x/c_0))*numpy.exp(-((x-0.5)**2)/2)
+
+    #def g_k(k, omega):
+    #    if k == 0:
+    #        return 1.0
+    #    else:
+    #        return 0.0
+    
 
     def g_k(k, omega):
         g_values = g(y, omega)
         fourier_coeffs = numpy.fft.fftshift(numpy.fft.fft(g_values))
-        k_values = numpy.fft.fftshift(numpy.fft.fftfreq(N, 2/N))
+        k_values = numpy.fft.fftshift(numpy.fft.fftfreq(N, (2*1)/N))
         index = numpy.argmin(numpy.abs(k_values - k))
         coefficient = fourier_coeffs[index]
         return coefficient
-    
-
-    #def g_k(k, omega):
-    #    g_values = g(y, omega)
-    #    fourier_coeffs = numpy.fft.fftshift(numpy.fft.fft(g_values))
-    #    k_values = numpy.fft.fftshift(numpy.fft.fftfreq(N, (2*1)/N))
-    #    index = numpy.argmin(numpy.abs(k_values - k))
-    #    coefficient = fourier_coeffs[index]
-    #    return coefficient
 
 
     def f(x, k):
@@ -152,7 +151,7 @@ def compute_alpha(omega, material):
         return sum_func
 
     def alpha(omega):
-        alpha_0 = numpy.array(complex(6.0, -6.0))
+        alpha_0 = numpy.array(complex(1.0, -1.0))
         temp = real_to_complex(minimize(lambda z: numpy.real(sum_e_k(omega)(real_to_complex(z))), complex_to_real(alpha_0), tol=1e-4).x)
         print(temp, "------", "je suis temp")
         return temp
@@ -172,7 +171,7 @@ def run_compute_alpha(material):
     print('Computing alpha...')
     numb_omega = 100  # 1000
     # omegas = numpy.logspace(numpy.log10(600), numpy.log10(30000), num=numb_omega)
-    omegas = numpy.linspace(2.0 * numpy.pi, numpy.pi * 10000, num=numb_omega)
+    omegas = numpy.linspace(10, 400, num=numb_omega)
     temp = [compute_alpha(omega, material=material) for omega in omegas]
     print("temp:", "------", temp)
     alphas, errors = map(list, zip(*temp))
