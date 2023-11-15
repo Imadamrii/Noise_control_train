@@ -110,6 +110,9 @@ def compute_projected(chi, domain, V_obj):
 
 def projection_finale(chi, V_obj): 
     table = []
+
+    M,N = numpy.shape(chi)
+    
     for i in range (M):
          for j in range (N):
               table.append((chi[i,j],(i,j)))
@@ -178,7 +181,7 @@ def optimization_procedure(domain_omega, spacestep, omega, f, f_dir, f_neu, f_ro
         for i in range(M):
             for j in range(N):
                 # if processing.is_on_robin_boundary([domain_omega[i,j]]):
-                grad[i,j] +=  numpy.real(Alpha*u[i,j]*numpy.conjugate(p[i,j]))
+                grad[i,j] +=  numpy.real(Alpha*u[i,j]*p[i,j])
         #print(numpy.linalg.norm(grad))
 
         #solution helmotz problem 
@@ -216,7 +219,7 @@ if __name__ == '__main__':
     # -- Fell free to modify the function call in this cell.
     # ----------------------------------------------------------------------
     # -- set parameters of the geometry
-    N = 100  # number of points along x-axis
+    N = 64 # number of points along x-axis
     M = 2 * N  # number of points along y-axis
     level = 1 # level of the fractal
     spacestep = 1.0 / N  # mesh size
