@@ -119,7 +119,7 @@ def run_frequentielle_chi_optimise_vobj_donnée():
     # -- set geometry of domain
     domain_omega, x, y, _, _ = preprocessing._set_geometry_of_domain(M, N, level)
 
-    omega = numpy.linspace(2*numpy.pi*20, 2*numpy.pi*1000, 2)
+    omega = numpy.linspace(2*numpy.pi*20, 2*numpy.pi*1000, 20)
     energie = []
     
     def g(x,omega):
