@@ -5,6 +5,7 @@ import matplotlib.pyplot as plt
 import demo_control_polycopie2023
 import numpy
 import _env
+import demo_control_polycopie2023 as solution 
 
 if __name__ == '__main__':
 
@@ -28,7 +29,29 @@ if __name__ == '__main__':
     
     def g(x,omega):
         return (numpy.sin(omega*x/c_0) + numpy.sin(10*omega*x/c_0))*numpy.exp(-((x-0.5)**2)/2)
-    
+    """L'enrgie pour  partout 0  """
+    for elem in omega:
+        chi = preprocessing._set_chi(M, N, x, y)
+        chi = preprocessing.set2zero(chi, domain_omega)
+
+        f_dir[:, :] = 0.0
+        for j in range(N):
+            f_dir[:, j] = g(j/N, elem)  
+        
+        Alpha = compute_alpha.compute_alpha(elem, material)
+        alpha_rob = Alpha[0] * chi
+        u = processing.solve_helmholtz(domain_omega, spacestep, elem/c_0, f, f_dir, f_neu, f_rob, beta_pde, alpha_pde, alpha_dir, beta_neu, beta_rob, alpha_rob)
+        energie.append(demo_control_polycopie2023.compute_objective_function(domain_omega, u, spacestep))
+
+    plt.plot(omega, energie, marker = 'x', color = 'darkblue')
+    plt.plot(omega, energie, color = 'darkblue')
+    plt.title('Graphe de $J(\chi)$ en fonction de $\omega$; chi = 0 sur neuman ')
+    plt.xlabel('Fréquence $\omega$')
+    plt.ylabel('Énergie $J(\chi)$')
+    plt.show()
+
+
+    """l'énergie de avec un xi partout égale à 1 """
     for elem in omega:
         chi = preprocessing._set_chi(M, N, x, y)
         chi = preprocessing.set2zero(chi, domain_omega)
@@ -43,10 +66,55 @@ if __name__ == '__main__':
         alpha_rob = Alpha[0] * chi
         u = processing.solve_helmholtz(domain_omega, spacestep, elem/c_0, f, f_dir, f_neu, f_rob, beta_pde, alpha_pde, alpha_dir, beta_neu, beta_rob, alpha_rob)
         energie.append(demo_control_polycopie2023.compute_objective_function(domain_omega, u, spacestep))
-
+    
+    
     plt.plot(omega, energie, marker = 'x', color = 'darkblue')
     plt.plot(omega, energie, color = 'darkblue')
-    plt.title('Graphe de $J(\chi)$ en fonction de $\omega$')
+    plt.title('Graphe de $J(\chi)$ en fonction de $\omega$; chi = 1 sur neuman ')
+    plt.xlabel('Fréquence $\omega$')
+    plt.ylabel('Énergie $J(\chi)$')
+    plt.show()
+
+
+    """l'énergie de avec un xi optimisé pour V_obj fixée  """
+    for elem in omega:
+        chi = preprocessing._set_chi(M, N, x, y)
+        chi = preprocessing.set2zero(chi, domain_omega)
+        # -- set parameters for optimization
+        S = 0  # surface of the fractal
+        for i in range(0, M):
+            for j in range(0, N):
+                if domain_omega[i, j] == _env.NODE_ROBIN:
+                    S += 1
+        V_0 = 1  # initial volume of the domain
+        V_obj = numpy.sum(numpy.sum(chi)) / S  # constraint on the density
+        mu = 1# initial gradient step
+        mu1 = 10 ** (-5)  # parameter of the volume functional
+
+
+        f_dir[:, :] = 0.0
+        for j in range(N):
+            f_dir[:, j] = g(j/N, elem)  
+        Alpha = compute_alpha.compute_alpha(elem, material)
+        alpha_rob = Alpha[0] * chi
+        u = processing.solve_helmholtz(domain_omega, spacestep, elem/c_0, f, f_dir, f_neu, f_rob, beta_pde, alpha_pde, alpha_dir, beta_neu, beta_rob, alpha_rob)
+
+
+        # -- compute optimization
+        energy = numpy.zeros((100+1, 1), dtype=numpy.float64)
+        # chi, energy, u, grad = your_optimization_procedure(...)
+        chi, energy, u, grad = solution. optimization_procedure(domain_omega, spacestep, elem/c_0, f, f_dir, f_neu, f_rob,
+                            beta_pde, alpha_pde, alpha_dir, beta_neu, beta_rob, alpha_rob,
+                            Alpha, mu, chi, V_obj)
+        # --- en of optimization
+
+
+        energie.append(demo_control_polycopie2023.compute_objective_function(domain_omega, u, spacestep))
+    
+    
+    plt.plot(omega, energie, marker = 'x', color = 'darkblue')
+    plt.plot(omega, energie, color = 'darkblue')
+    plt.title('Graphe de $J(\chi)$ en fonction de $\omega$; optimisé pour v_obj fixé  ')
     plt.xlabel('Fréquence $\omega$')
     plt.ylabel('Énergie $J(\chi)$')
     plt.show()
