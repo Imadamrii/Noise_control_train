@@ -5,7 +5,7 @@ import matplotlib.pyplot as plt
 import demo_control_polycopie2023
 import numpy
 import _env
-import demo_control_polycopie2023 as solution 
+
 
 if __name__ == '__main__':
 
@@ -103,7 +103,7 @@ if __name__ == '__main__':
         # -- compute optimization
         energy = numpy.zeros((100+1, 1), dtype=numpy.float64)
         # chi, energy, u, grad = your_optimization_procedure(...)
-        chi, energy, u, grad = solution. optimization_procedure(domain_omega, spacestep, elem/c_0, f, f_dir, f_neu, f_rob,
+        chi, energy, u, grad = demo_control_polycopie2023.optimization_procedure(domain_omega, spacestep, elem/c_0, f, f_dir, f_neu, f_rob,
                             beta_pde, alpha_pde, alpha_dir, beta_neu, beta_rob, alpha_rob,
                             Alpha, mu, chi, V_obj)
         # --- en of optimization
