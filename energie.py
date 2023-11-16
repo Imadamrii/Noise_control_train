@@ -9,10 +9,10 @@ import _env
 def run_etude_frequentielle_chi_0(): 
     N = 64  # number of points along x-axis
     M = 2 * N  # number of points along y-axis
-    level = 2 # level of the fractal
+    level = 0 # level of the fractal
     spacestep = 1.0 / N  # mesh size
     # Material = [phi, gamma_p, sigma, rho_0, alpha_h, c_0]
-    material = [0.529,7.0 / 5.0,  151429.0, 1.2, 1.37, 340.0]
+    material = [0.70, 7.0/5.0, 140000.0, 1.2, 1.02,340.0]
     c_0 = material[-1]
     beta_pde, alpha_pde, alpha_dir, beta_neu, alpha_rob, beta_rob = preprocessing._set_coefficients_of_pde(M, N)
 
@@ -22,11 +22,14 @@ def run_etude_frequentielle_chi_0():
     # -- set geometry of domain
     domain_omega, x, y, _, _ = preprocessing._set_geometry_of_domain(M, N, level)
 
-    omega = numpy.linspace(2*numpy.pi*20, 2*numpy.pi*1000, 100)
+    omega = numpy.linspace(2*numpy.pi*20, 2*numpy.pi*1000, 50)
     energie = []
     
     def g(x,omega):
-        return (numpy.sin(omega*x/c_0) + numpy.sin(10*omega*x/c_0))*numpy.exp(-((x-0.5)**2)/2)
+            return (2*numpy.sin(omega*x/c_0) 
+                    + numpy.sin((37.5*omega-1250)*x/c_0))*numpy.exp(-((x-0.5)**2)/2)
+
+
     """L'enrgie pour  partout 0  """
     for elem in omega:
         chi = preprocessing._set_chi(M, N, x, y)
@@ -58,7 +61,7 @@ def run_etude_frequentielle_chi_1():
     level = 2 # level of the fractal
     spacestep = 1.0 / N  # mesh size
     # Material = [phi, gamma_p, sigma, rho_0, alpha_h, c_0]
-    material = [0.529,7.0 / 5.0,  151429.0, 1.2, 1.37, 340.0]
+    material = [0.70, 7.0/5.0, 140000.0, 1.2, 1.02,340.0]
     c_0 = material[-1]
     beta_pde, alpha_pde, alpha_dir, beta_neu, alpha_rob, beta_rob = preprocessing._set_coefficients_of_pde(M, N)
 
@@ -72,7 +75,10 @@ def run_etude_frequentielle_chi_1():
     energie = []
     
     def g(x,omega):
-        return (numpy.sin(omega*x/c_0) + numpy.sin(10*omega*x/c_0))*numpy.exp(-((x-0.5)**2)/2)
+            return (2*numpy.sin(omega*x/c_0) 
+                    + numpy.sin((37.5*omega-1250)*x/c_0))*numpy.exp(-((x-0.5)**2)/2)
+
+
     for elem in omega:
         chi = preprocessing._set_chi(M, N, x, y)
         chi = preprocessing.set2zero(chi, domain_omega)
@@ -108,7 +114,8 @@ def run_frequentielle_chi_optimise_vobj_donnée():
     level = 2 # level of the fractal
     spacestep = 1.0 / N  # mesh size
     # Material = [phi, gamma_p, sigma, rho_0, alpha_h, c_0]
-    material = [0.529,7.0 / 5.0,  151429.0, 1.2, 1.37, 340.0]
+    material = [0.70, 7.0/5.0, 140000.0, 1.2, 1.02,340.0]
+
     c_0 = material[-1]
 
     beta_pde, alpha_pde, alpha_dir, beta_neu, alpha_rob, beta_rob = preprocessing._set_coefficients_of_pde(M, N)
@@ -123,7 +130,10 @@ def run_frequentielle_chi_optimise_vobj_donnée():
     energie = []
     
     def g(x,omega):
-        return (numpy.sin(omega*x/c_0) + numpy.sin(10*omega*x/c_0))*numpy.exp(-((x-0.5)**2)/2)
+            return (2*numpy.sin(omega*x/c_0) 
+                    + numpy.sin((37.5*omega-1250)*x/c_0))*numpy.exp(-((x-0.5)**2)/2)
+
+
     
     for elem in omega:
 
@@ -174,7 +184,5 @@ def run_frequentielle_chi_optimise_vobj_donnée():
 
 if __name__ == '__main__':
     # run_etude_frequentielle_chi_0()
-    # run_etude_frequentielle_chi_1()
-    run_frequentielle_chi_optimise_vobj_donnée()
-
-
+    run_etude_frequentielle_chi_1()
+    # run_frequentielle_chi_optimise_vobj_donnée()
