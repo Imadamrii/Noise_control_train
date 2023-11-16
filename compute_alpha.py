@@ -78,7 +78,7 @@ def compute_alpha(omega, material):
     N = 100
     
     def g(x,omega):
-        return (numpy.sin(omega*x/c_0) + numpy.sin(10*omega*x/c_0))*numpy.exp(-((x-0.5)**2)/2)
+        return (2*numpy.sin(omega*x/c_0) + numpy.sin((37.5*omega-1250)*x/c_0))*numpy.exp(-((x-0.5)**2)/2)
 
     #def g_k(k, omega):
     #    if k == 0:
@@ -239,7 +239,7 @@ def run_plot_alpha(material):
 
 
 def run():
-    material = [0.529, 7.0/5.0, 151429.0, 1.2, 1.37, 340.0]
+    material = [0.70, 7.0/5.0, 140000.0, 1.2, 1.02, 340.0]
     run_compute_alpha(material)
     run_plot_alpha(material)
     return

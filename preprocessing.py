@@ -111,8 +111,8 @@ def _set_geometry_of_domain(M, N, level=0):
 
 def _set_chi(M, N, x, y):
     chi = numpy.zeros((M, N), dtype=numpy.float64)
-    k_begin = (len(x) - 1) // 5
-    k_end = 3 * (len(x) - 1) // 5
+    k_begin = (len(x) - 1) // 100
+    k_end = 15 * (len(x) - 1) // 100
     val = 1.0
     for k in range(k_begin, k_end):
         chi[int(y[k]), int(x[k])] = val
