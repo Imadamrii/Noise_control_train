@@ -112,19 +112,24 @@ def projection_finale(chi, V_obj):
     table = []
 
     M,N = numpy.shape(chi)
-    
+    S = 0  # surface of the fractal
+
     for i in range (M):
          for j in range (N):
-              table.append((chi[i,j],(i,j)))
-
+              if  domain_omega[i,j] == _env.NODE_ROBIN: 
+                table.append((chi[i,j],(i,j)))
+                S += 1
+    
     table= sorted(table, reverse=True)
     chi1=numpy.zeros((M,N))
-    nbre_de_uns = int(V_obj*N)
-    for i in range(nbre_de_uns): 
+    nbre_de_uns = int(V_obj*S)
+    i = 0
+    while (i < nbre_de_uns): 
+        
         value, node_id = table[i]
         node_i, node_j= node_id 
         chi1[node_i,node_j] = 1 
-
+        i+=1
     return chi1
 
 def compute_objective_function(domain_omega, u, spacestep):
@@ -163,7 +168,7 @@ def optimization_procedure(domain_omega, spacestep, omega, f, f_dir, f_neu, f_ro
 
     k = 0
     (M, N) = numpy.shape(domain_omega)
-    numb_iter = 10
+    numb_iter = 20
     epsilon_0 = 10 ** -5
    
 
@@ -181,11 +186,7 @@ def optimization_procedure(domain_omega, spacestep, omega, f, f_dir, f_neu, f_ro
         for i in range(M):
             for j in range(N):
                 # if processing.is_on_robin_boundary([domain_omega[i,j]]):
-<<<<<<< HEAD
-                grad[i,j] +=  numpy.real(Alpha*u[i,j]*(p[i,j]))
-=======
                 grad[i,j] +=  numpy.real(Alpha*u[i,j]*p[i,j])
->>>>>>> fractal_code_source
         #print(numpy.linalg.norm(grad))
 
         #solution helmotz problem 
@@ -213,7 +214,7 @@ def optimization_procedure(domain_omega, spacestep, omega, f, f_dir, f_neu, f_ro
     print('end. computing solution of Helmholtz problem, i.e., u')
     alpha_rob = Alpha*chi
     u = processing.solve_helmholtz(domain_omega, spacestep, omega, f, f_dir, f_neu, f_rob, beta_pde, alpha_pde, alpha_dir, beta_neu, beta_rob, alpha_rob)
-    # chi = projection_finale(chi,V_obj)
+    chi = projection_finale(chi,V_obj)
     return chi, energy, u, grad
 
 
@@ -227,16 +228,11 @@ if __name__ == '__main__':
     # -- set parameters of the geometry
     N = 64 # number of points along x-axis
     M = 2 * N  # number of points along y-axis
-<<<<<<< HEAD
     level = 3 # level of the fractal
-=======
-    level = 1 # level of the fractal
->>>>>>> fractal_code_source
     spacestep = 1.0 / N  # mesh size
     
     # Material = [phi, gamma_p, sigma, rho_0, alpha_h, c_0]
-    material = [0.529, 7.0/5.0, 151429.0, 1.2, 1.37, 340.0]
-
+    material = [0.70, 7.0/5.0, 140000.0, 1.2, 1.02, 340.0]
     # -- set parameters of the partial differential equation
     #kx = -1.0
     #ky = -1.0
@@ -270,7 +266,7 @@ if __name__ == '__main__':
     c_0 = material[-1]
     
     def g(x,omega):
-        return (numpy.sin(omega*x/c_0) + numpy.sin(10*omega*x/c_0))*numpy.exp(-((x-0.5)**2)/2)
+        return (2*numpy.sin(omega*x/c_0) + numpy.sin((37.5*omega-1250)*x/c_0))*numpy.exp(-((x-0.5)**2)/2)
     
     f_dir[:, :] = 0.0
     for j in range(N):
@@ -299,7 +295,9 @@ if __name__ == '__main__':
             if domain_omega[i, j] == _env.NODE_ROBIN:
                 S += 1
     V_0 = 1  # initial volume of the domain
-    V_obj = numpy.sum(numpy.sum(chi)) / S  # constraint on the density
+    V_obj = numpy.sum(numpy.sum(chi)) / S
+    print('Voici', V_obj)
+    #V_obj = 0.14 # constraint on the density
     mu = 5# initial gradient step
     mu1 = 10 ** (-5)  # parameter of the volume functional
 
