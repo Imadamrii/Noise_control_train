@@ -9,7 +9,7 @@ import _env
 def run_etude_frequentielle_chi_0(): 
     N = 64  # number of points along x-axis
     M = 2 * N  # number of points along y-axis
-    level = 0 # level of the fractal
+    level = 3 # level of the fractal
     spacestep = 1.0 / N  # mesh size
     # Material = [phi, gamma_p, sigma, rho_0, alpha_h, c_0]
     material = [0.70, 7.0/5.0, 140000.0, 1.2, 1.02,340.0]
@@ -46,11 +46,11 @@ def run_etude_frequentielle_chi_0():
 
     plt.plot(omega, energie, marker = 'x', color = 'darkblue')
     plt.plot(omega, energie, color = 'darkblue')
-    plt.title('Graphe de $J(\chi)$ en fonction de $\omega$; chi = 0 sur neuman ')
-    plt.xlabel('Fréquence $\omega$')
-    plt.ylabel('Énergie $J(\chi)$')
+    plt.title('Graphe  $J(\chi)$ =f($\omega$); \chi = 0 everywhere ')
+    plt.xlabel('Frequency $\omega$')
+    plt.ylabel('Energy $J(\chi)$')
     # plt.show()
-    filename = 'fig_energy_chi_0_partout.jpg'
+    filename = 'fig_energy_chi_0_partout_level3.jpg'
     plt.savefig(filename)
     plt.close()
 
@@ -58,7 +58,7 @@ def run_etude_frequentielle_chi_0():
 def run_etude_frequentielle_chi_1(): 
     N = 64  # number of points along x-axis
     M = 2 * N  # number of points along y-axis
-    level = 2 # level of the fractal
+    level = 3 # level of the fractal
     spacestep = 1.0 / N  # mesh size
     # Material = [phi, gamma_p, sigma, rho_0, alpha_h, c_0]
     material = [0.70, 7.0/5.0, 140000.0, 1.2, 1.02,340.0]
@@ -97,11 +97,11 @@ def run_etude_frequentielle_chi_1():
     
     plt.plot(omega, energie, marker = 'x', color = 'darkblue')
     plt.plot(omega, energie, color = 'darkblue')
-    plt.title('Graphe de $J(\chi)$ en fonction de $\omega$; chi = 1 sur neuman ')
-    plt.xlabel('Fréquence $\omega$')
+    plt.title('Graph  $J(\chi)$=f($\omega$); $\chi = 1$ everywhere ')
+    plt.xlabel('Frequency $\omega$')
     plt.ylabel('Énergie $J(\chi)$')
     # plt.show()
-    filename = 'fig_energy_chi_1_partout.jpg'
+    filename = 'fig_energy_chi_1_partout_level3.jpg'
     plt.savefig(filename)
     plt.close()
 
@@ -111,7 +111,7 @@ def run_etude_frequentielle_chi_1():
 def run_frequentielle_chi_optimise_vobj_donnée(): 
     N = 64  # number of points along x-axis
     M = 2 * N  # number of points along y-axis
-    level = 2 # level of the fractal
+    level = 3 # level of the fractal
     spacestep = 1.0 / N  # mesh size
     # Material = [phi, gamma_p, sigma, rho_0, alpha_h, c_0]
     material = [0.70, 7.0/5.0, 140000.0, 1.2, 1.02,340.0]
@@ -126,7 +126,7 @@ def run_frequentielle_chi_optimise_vobj_donnée():
     # -- set geometry of domain
     domain_omega, x, y, _, _ = preprocessing._set_geometry_of_domain(M, N, level)
 
-    omega = numpy.linspace(2*numpy.pi*20, 2*numpy.pi*1000, 100)
+    omega = numpy.linspace(2*numpy.pi*20, 2*numpy.pi*1000, 60)
     energie = []
     
     def g(x,omega):
@@ -146,7 +146,8 @@ def run_frequentielle_chi_optimise_vobj_donnée():
                 if domain_omega[i, j] == _env.NODE_ROBIN:
                     S += 1
         V_0 = 1  # initial volume of the domain
-        V_obj = numpy.sum(numpy.sum(chi)) / S  # constraint on the density
+        # V_obj = numpy.sum(numpy.sum(chi)) / S  # constraint on the density
+        V_obj = 0.143
         mu = 1# initial gradient step
         mu1 = 10 ** (-5)  # parameter of the volume functional
 
@@ -171,11 +172,11 @@ def run_frequentielle_chi_optimise_vobj_donnée():
     
     plt.plot(omega, energie, marker = 'x', color = 'darkblue')
     plt.plot(omega, energie, color = 'darkblue')
-    plt.title('Graphe de $J(\chi)$ en fonction de $\omega$; optimisé pour v_obj fixé  ')
-    plt.xlabel('Fréquence $\omega$')
-    plt.ylabel('Énergie $J(\chi)$')
+    plt.title('Graphe de $J(\chi)$ =f($\omega$); $\chi$ optimized ,v_obj Optimized    ')
+    plt.xlabel('Frequency $\omega$')
+    plt.ylabel('Energy $J(\chi)$')
     # plt.show()
-    filename = 'fig_energy_chi_optimise.jpg'
+    filename = 'fig_energy_chi_optimise_level3.jpg'
     plt.savefig(filename)
     plt.close()
 
@@ -184,5 +185,5 @@ def run_frequentielle_chi_optimise_vobj_donnée():
 
 if __name__ == '__main__':
     # run_etude_frequentielle_chi_0()
-    run_etude_frequentielle_chi_1()
-    # run_frequentielle_chi_optimise_vobj_donnée()
+    # run_etude_frequentielle_chi_1()
+    run_frequentielle_chi_optimise_vobj_donnée()

@@ -44,18 +44,7 @@ def integral(chi):
             integral += chi[i,j]*spacestep
     return integral
 
-# def projection_finale(chi, V_obj): 
-#     table = []
-#     for i in range (M):
-#          for j in range (N):
-#               table.append((chi[i,j],(i,j)))
 
-#     table= sorted(table)
-#     chi1=numpy.zeros(M,N)
-#     for index in range (int(V_obj*N)):
-
-    
-#     return chi 
 
 def compute_projected(chi, domain, V_obj):
     """This function performs the projection of $\chi^n - mu*grad
@@ -108,23 +97,28 @@ def compute_projected(chi, domain, V_obj):
 
     return chi
 
-def projection_finale(chi, V_obj): 
+def projection_finale(chi, V_obj,domain_omega): 
     table = []
 
     M,N = numpy.shape(chi)
-    
+    S = 0  # surface of the fractal
+
     for i in range (M):
          for j in range (N):
-              table.append((chi[i,j],(i,j)))
-
+              if  domain_omega[i,j] == _env.NODE_ROBIN: 
+                table.append((chi[i,j],(i,j)))
+                S += 1
+    
     table= sorted(table, reverse=True)
     chi1=numpy.zeros((M,N))
-    nbre_de_uns = int(V_obj*N)
-    for i in range(nbre_de_uns): 
+    nbre_de_uns = int(V_obj*S)
+    i = 0
+    while (i < nbre_de_uns): 
+        
         value, node_id = table[i]
         node_i, node_j= node_id 
         chi1[node_i,node_j] = 1 
-
+        i+=1
     return chi1
 
 def compute_objective_function(domain_omega, u, spacestep):
@@ -209,7 +203,7 @@ def optimization_procedure(domain_omega, spacestep, omega, f, f_dir, f_neu, f_ro
     print('end. computing solution of Helmholtz problem, i.e., u')
     alpha_rob = Alpha*chi
     u = processing.solve_helmholtz(domain_omega, spacestep, omega, f, f_dir, f_neu, f_rob, beta_pde, alpha_pde, alpha_dir, beta_neu, beta_rob, alpha_rob)
-    # chi = projection_finale(chi,V_obj)
+    chi = projection_finale(chi,V_obj,domain_omega)
     return chi, energy, u, grad
 
 
@@ -223,7 +217,7 @@ if __name__ == '__main__':
     # -- set parameters of the geometry
     N = 64 # number of points along x-axis
     M = 2 * N  # number of points along y-axis
-    level = 1 # level of the fractal
+    level = 3 # level of the fractal
     spacestep = 1.0 / N  # mesh size
     
     # Material = [phi, gamma_p, sigma, rho_0, alpha_h, c_0]
@@ -291,7 +285,8 @@ if __name__ == '__main__':
             if domain_omega[i, j] == _env.NODE_ROBIN:
                 S += 1
     V_0 = 1  # initial volume of the domain
-    V_obj = numpy.sum(numpy.sum(chi)) / S  # constraint on the density
+    # V_obj = numpy.sum(numpy.sum(chi)) / S  # constraint on the density
+    V_obj = 0.143
     mu = 5# initial gradient step
     mu1 = 10 ** (-5)  # parameter of the volume functional
 
@@ -317,7 +312,7 @@ if __name__ == '__main__':
     
     chin = chi.copy()
     un = u.copy()
-    
+    print(numpy.sum(numpy.sum(chi)) / S)
     # -- plot chi, u, and energy
     postprocessing._plot_uncontroled_solution(u0, chi0)
     postprocessing._plot_controled_solution(un, chin)
