@@ -25,7 +25,7 @@ level = 3 # level of the fractal
 spacestep = 1.0 / N  # mesh size
 
 # Material = [phi, gamma_p, sigma, rho_0, alpha_h, c_0]
-material = [0.70, 7.0/5.0, 140000.0, 1.2, 1.02, 340.0]
+material = [0.70, 7.0/5.0, 140000.0,1.2,1.02,340.0]
 
 # -- set parameters of the partial differential equation
 #kx = -1.0
@@ -50,7 +50,9 @@ wavenumber = omega/material[-1]
 c_0 = material[-1]
 
 def g(x,omega):
-        return (2*numpy.sin(omega*x/c_0) + numpy.sin((37.5*omega-1250)*x/c_0))*numpy.exp(-((x-0.5)**2)/2)
+        return (2*numpy.sin(omega*x/c_0) 
+                + numpy.sin((37.5*omega-1250)*x/c_0))*numpy.exp(-((x-0.5)**2)/2)
+
 
 f_dir[:, :] = 0.0
 for j in range(N):
